@@ -1,0 +1,19 @@
+{
+  "name": "api-cv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start":"node index.js",
+    "dev":"nodemon index.js"
+  },
+  "author": "Melki",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "json-parser": "^3.1.2",
+    "mongoose": "^5.10.9",
+    "nodemon": "^2.0.5"
+  }
+}
