@@ -1,12 +1,32 @@
 controllers = require('../controllers')
-const { User, Skill, SkillLevel, Degree, Hobbie, Course, WorkExpertise } = require('../models')
-
 require('../dbcnn')
+const { User, Skill, SkillLevel, Degree, Hobbie, Goal, Course, WorkExpertise } = require('../models')
+
 
 module.exports = async (app, server) => {
     const router = server.Router()
 
     //user
+    router.post('/user', async (req, res, next) => {
+        const objReqBody = { userId, password } = req.body
+        await User.findById(userId)
+            .then(async (data) => {
+                const findUser = new User(data)
+                await findUser.matchPassword(password)
+                    .then((data) => {                        
+                        if (data) {
+                            res.send(findUser)
+                        } else {
+                            res.send(`err: the password doesn't match`)
+                        }
+                    })
+                    .catch((err) => {
+                        res.send(`err: ${err}`)
+                    })
+
+            })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
     router.post('/user/edit/:userId', async (req, res, next) => {
         //the whole process is 
         //check the empty elements and rejected if is necesary
@@ -154,14 +174,14 @@ module.exports = async (app, server) => {
     router.put('/degrees/edit/:degreeId', async (req, res, next) => {
         const objReq = { institutionName, carreerDescription, carrerTitle, gotCertified, institute, initialDate, finalDate } = req.body
         await Degree.findByIdAndUpdate(req.params.degreeId, objReq)
-        .then((data)=>{res.send(data)})
-        .catch((err)=>{res.send(`err: ${err}`)})
+            .then((data) => { res.send(data) })
+            .catch((err) => { res.send(`err: ${err}`) })
     })
     router.delete('/degree/delete/:degreeId', async (req, res, next) => {
         await Degree.findByIdAndDelete(req.params.degreeId)
-        .then((data)=>{res.send('successful')})
-        .catch((err)=>{res.send(`err: ${err}`)})
-    })    
+            .then((data) => { res.send('successful') })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
 
     //hobbies
     router.get('/hobbies/:userId', async (req, res, next) => {
@@ -175,23 +195,42 @@ module.exports = async (app, server) => {
 
     })
     router.post('/hobbies/add', async (req, res, next) => {
-        const objReq = {userId, title, descripticon} = req.body
+        const objReq = { userId, title, descripticon } = req.body
         const newHobbie = new Hobbie(objReq)
         await newHobbie.save()
             .then((data) => { res.send(data) })
             .catch((err) => { res.send(`err: ${err}`) })
     })
     router.put('/hobbies/edit/:hobbieId/', async (req, res, next) => {
-        const objReq = {title, descripticon} = req.body
+        const objReq = { title, descripticon } = req.body
         await Hobbie.findByIdAndUpdate(req.params.hobbieId, objReq)
-        .then((data)=>{res.send(data)})
-        .catch((err)=>{res.send(`err: ${err}`)})
+            .then((data) => { res.send(data) })
+            .catch((err) => { res.send(`err: ${err}`) })
     })
     router.delete('/hobbies/delete/:hobbieId', async (req, res, next) => {
         await Hobbie.findByIdAndDelete(req.params.hobbieId)
-        .then((data)=>{res.send('successful')})
-        .catch((err)=>{res.send(`err: ${err}`)})
-    })  
+            .then((data) => { res.send('successful') })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
+
+    //goals
+    router.get('/goals/:userId', async (req, res, next) => {
+        await Goal.find({ userId: req.params.userId })
+            .then((data) => { res.send(data) })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
+    router.post('/goals/add', async (req, res, next) => {
+        const objReq = { userId, descripticon } = req.body
+        const newGoal = new Goal(objReq)
+        await newGoal.save()
+            .then((data) => { res.send(data) })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
+    router.delete('/goals/delete/:goalId', async (req, res, next) => {
+        await Goal.findByIdAndDelete(req.params.goalId)
+            .then((data) => { res.send('successful') })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
 
     // //courses
     // router.get('/courses/:userId', async (req, res, next) => {

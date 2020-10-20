@@ -5,5 +5,6 @@ module.exports = {
     Hobbie: require('./hobbie'),
     Skill: require('./skill'),
     SkillLevel: require('./skillLevel'),
-    WorkExpertise: require('./workExperience')
+    WorkExpertise: require('./workExperience'),
+    Goal: require('./goals')
 }
