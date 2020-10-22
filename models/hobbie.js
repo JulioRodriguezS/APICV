@@ -13,6 +13,9 @@ const hobbiesSchema = new mongoose.Schema({
     icon:{
         type: String
     },
+    setView:{
+        type:Boolean
+    },
     savedDate:{
         type: Date,
         default: Date.now

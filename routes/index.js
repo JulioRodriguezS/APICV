@@ -1,19 +1,18 @@
-controllers = require('../controllers')
 require('../dbcnn')
-const { User, Skill, SkillLevel, Degree, Hobbie, Goal, Course, WorkExpertise } = require('../models')
+const { User, Skill, SkillLevel, Degree, Hobbie, SocialNetwork, Goal, Course, WorkExpertise } = require('../models')
 
 
 module.exports = async (app, server) => {
     const router = server.Router()
 
-    //user
+    //get user information
     router.post('/user', async (req, res, next) => {
-        const objReqBody = { userId, password } = req.body
-        await User.findById(userId)
+        const objReqBody = { email, password } = req.body
+        await User.findOne({ email: email })
             .then(async (data) => {
                 const findUser = new User(data)
                 await findUser.matchPassword(password)
-                    .then((data) => {                        
+                    .then((data) => {
                         if (data) {
                             res.send(findUser)
                         } else {
@@ -27,21 +26,27 @@ module.exports = async (app, server) => {
             })
             .catch((err) => { res.send(`err: ${err}`) })
     })
-    router.post('/user/edit/:userId', async (req, res, next) => {
-        //the whole process is 
-        //check the empty elements and rejected if is necesary
-        //search by email and rejected if allready exists in database
-        //
-        const { name, lastName, email, phoneNumb, country, city, cp, address, password } = req.body
-        const actualUser = await User.findOne({ email: email })
-        if (actualUser || match) {
-            console.log('ok', actualUser)
-        } else {
-            console.log('not ok')
-        }
-
-
-        res.send(req.body)
+    router.put('/user/edit', async (req, res, next) => {        
+        const { userId, name, lastName, phoneNumb, country, city, cp, address, actualPassword, newPassword } = req.body
+        await User.findById(userId)
+            .then(async (data) => {
+                const findUser = new User(data)
+                await findUser.matchPassword(actualPassword)
+                    .then(async (data) => {
+                        if (data) {
+                            const newUser = {name, lastName, phone, country, city, cp, address, password} = {name, lastName, phoneNumb, country, city, cp, address, newPassword}
+                            await User.findByIdAndUpdate(userId, newUser)
+                                .then((data) => { res.send(data) })
+                                .catch((err) => { res.send(`err: ${err}`) })
+                        } else {
+                            res.send(`err: the password doesn't match`)
+                        }
+                    })
+                    .catch((err) => {
+                        res.send(`err: ${err}`)
+                    })
+            })
+            .catch((err) => { res.send(`err: ${err}`) })
     })
     router.post('/user/add', async (req, res, next) => {
 
@@ -49,24 +54,17 @@ module.exports = async (app, server) => {
         const newUser = new User({ name, lastName, email, phoneNumb, country, city, cp, address })
 
         if (isValid(name, 'str') && isValid(email, 'str') && isValid(password, 'str')) {
-
             const existMail = await User.findOne({ email: newUser.email })
             if (!existMail) {
-                console.log('no existe')
                 newUser.password = await newUser.setPassword(password)
                 await newUser.save()
                     .then(() => { res.send('ok') })
                     .catch((err) => { res.send(`err: ${err}`) })
-
             } else {
-
                 res.send(`err: the user email already exists`)
-
             }
         } else {
-
             res.status(400).json({ err: "bad request" })
-
         }
     })
 
@@ -147,10 +145,31 @@ module.exports = async (app, server) => {
             res.send(`there is no levels in that range`)
         }
     })
+    //add skills to user, you have to pass an array of objects
+    router.post('/skills/add', async (req, res, next) => {
+        const skillsArr = req.body
+        const resp = []
+        for (skill of skillsArr) {
+            const newSkill = new Skill(skill)
+            await newSkill.save()
+                .then((data) => { resp.push({ "successfully saved": data }) })
+                .catch((err) => { resp.push({ "err": err }) })
+        }
+        res.send(resp)
+    })
+    router.get('/skills/:userId', async (req, res, next) => {
+        const skills = await Skill.find({ userId: req.params.userId }).lean().sort({ skillLevel: -1 })
+        skills.then((data) => { res.send(data) })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
+    router.delete('/skills', async (req, res, next) => {
+        await Skill.findByIdAndDelete(req.body.skillId)
+            .then((data) => { res.send('successful') })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
 
     //degrees
     router.get('/degrees/:userId', async (req, res, next) => {
-
         const searchUser = await User.findById(req.params.userId)
         if (searchUser) {
             await Degree.findOne({ userId: searchUser._id })
@@ -232,35 +251,76 @@ module.exports = async (app, server) => {
             .catch((err) => { res.send(`err: ${err}`) })
     })
 
-    // //courses
-    // router.get('/courses/:userId', async (req, res, next) => {
-    //     await Course.findById({ userId: req.params.userId }).lean()
-    //         .then((data) => {
-    //             res.send(data)
-    //         })
-    //         .catch((err) => {
-    //             res.send(`err: ${err}`)
-    //         })
+    //social networks
+    router.post('/social-network/add', async (req, res, next) => {
+        const objReq = { userId, networkName, networkLink } = req.body
+        const newSN = new SocialNetwork(objReq)
+        await newSN.save()
+            .then((data) => { res.send(data) })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
+    router.delete('/social-network/delete', async (req, res, next) => {
+        await SocialNetwork.findByIdAndDelete(req.body.socialNetworkId)
+            .then((data) => { res.send('successful') })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
 
-    // })
-    // router.post('/courses/add/:userId')
-    // router.put('/courses/edit/:courseId/:userId')
-    // router.delete('/courses/delete/:courseId/:userId')
+    //courses
+    router.get('/courses/:userId', async (req, res, next) => {
+        await Course.findById({ userId: req.params.userId }).lean()
+            .then((data) => {
+                res.send(data)
+            })
+            .catch((err) => {
+                res.send(`err: ${err}`)
+            })
+    })
+    //we recieve an array of object of courses
+    router.post('/courses/add', async (req, res, next) => {
+        const coursesArr = req.body
+        const resp = []
+        for (course of coursesArr) {
+            const newCourse = new Course(course)
+            await newCourse.save()
+                .then((data) => { resp.push({ "successfully saved": data }) })
+                .catch((err) => { resp.push({ "err": err }) })
+        }
+        res.send(resp)
+    })
+    router.delete('/courses/delete', async (req, res, next) => {
+        await Course.findByIdAndDelete(req.body.courseId)
+            .then((data) => { res.send('successful') })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
 
-    // //workExperience
-    // router.get('/workExperience/:userId', async (req, res, next) => {
-    //     await WorkExpertise.findById({ userId: req.params.userId }).lean()
-    //         .then((data) => {
-    //             res.send(data)
-    //         })
-    //         .catch((err) => {
-    //             res.send(`err: ${err}`)
-    //         })
-
-    // })
-    // router.post('/workExperience/add/:userId')
-    // router.put('/workExperience/edit/:workExperienceId/:userId')
-    // router.delete('/workExperience/delete/:workExperienceId/:userId')
+    //workExperience
+    router.get('/work-experience/:userId', async (req, res, next) => {
+        await WorkExpertise.findById({ userId: req.params.userId }).lean()
+            .then((data) => {
+                res.send(data)
+            })
+            .catch((err) => {
+                res.send(`err: ${err}`)
+            })
+    })
+    //we recieve an array of object of work experiences
+    router.post('/work-experience/add', async (req, res, next) => {
+        const workExpertiseArr = req.body
+        const resp = []
+        for (workExpertise of workExpertiseArr) {
+            const newWorkExpertise = new WorkExpertise(workExpertise)
+            await newWorkExpertise.save()
+                .then((data) => { resp.push({ "successfully saved": data }) })
+                .catch((err) => { resp.push({ "err": err }) })
+        }
+        res.send(resp)
+    })
+    //recibe on post or delete method workExpertiseId
+    router.delete('/work-experience/delete', async (req, res, next) => {
+        await WorkExpertise.findByIdAndDelete(req.body.workExpertiseId)
+            .then((data) => { res.send('successful') })
+            .catch((err) => { res.send(`err: ${err}`) })
+    })
 
 
     const isValid = (word, type) => {

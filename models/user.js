@@ -8,10 +8,13 @@ const userSchema = mongoose.Schema({
     lastName: {
         type: String
     },
+    title: {
+        type: String
+    },
     email: {
         type: String
     },
-    phoneNumber: {
+    phone: {
         type: String
     },
     country: {

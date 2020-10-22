@@ -8,6 +8,9 @@ const coursesSchema = new mongoose.Schema({
     courseInstitution:{
         type: String
     },
+    courseInsitutionURL:{
+        type: String
+    },
     courseTitle:{
         type: String        
     },
@@ -19,6 +22,9 @@ const coursesSchema = new mongoose.Schema({
     },
     courseFinal:{
         type: Date
+    },
+    setView:{
+        type:Boolean
     },
     dateSaved:{
         type: Date,
