@@ -7,24 +7,29 @@ module.exports = async (app, server) => {
 
     //get user information
     router.post('/user', async (req, res, next) => {
-        const objReqBody = { email, password } = req.body
-        await User.findOne({ email: email })
-            .then(async (data) => {
-                const findUser = new User(data)
-                await findUser.matchPassword(password)
-                    .then((data) => {
-                        if (data) {
-                            res.send(findUser)
-                        } else {
-                            res.send(`err: the password doesn't match`)
-                        }
-                    })
-                    .catch((err) => {
-                        res.send(`err: ${err}`)
-                    })
+        const { userId } = req.body
+        await User.findById(userId)
+        .then((data)=>{res.send(data)})
+        .catch((err) => { res.send(`err: ${err}`) })
+        //deprecaited because not sense to use the password for some that has to be public
+        // const objReqBody = { email, password } = req.body
+        // await User.findOne({ email: email })
+        //     .then(async (data) => {
+        //         const findUser = new User(data)
+        //         await findUser.matchPassword(password)
+        //             .then((data) => {
+        //                 if (data) {
+        //                     res.send(findUser)
+        //                 } else {
+        //                     res.send(`err: the password doesn't match`)
+        //                 }
+        //             })
+        //             .catch((err) => {
+        //                 res.send(`err: ${err}`)
+        //             })
 
-            })
-            .catch((err) => { res.send(`err: ${err}`) })
+        //     })
+        //     .catch((err) => { res.send(`err: ${err}`) })
     })
     router.put('/user/edit', async (req, res, next) => {        
         const { userId, name, lastName, phoneNumb, country, city, cp, address, actualPassword, newPassword } = req.body
