@@ -6,8 +6,8 @@ module.exports = async (app, server) => {
     const router = server.Router()
 
     //get user information
-    router.post('/user', async (req, res, next) => {
-        const { userId } = req.body
+    router.get('/user', async (req, res, next) => {
+        const { userId } = req.params.body 
         await User.findById(userId)
         .then((data)=>{res.send(data)})
         .catch((err) => { res.send(`err: ${err}`) })
@@ -163,9 +163,9 @@ module.exports = async (app, server) => {
         res.send(resp)
     })
     router.get('/skills/:userId', async (req, res, next) => {
-        const skills = await Skill.find({ userId: req.params.userId }).lean().sort({ skillLevel: -1 })
-        skills.then((data) => { res.send(data) })
-            .catch((err) => { res.send(`err: ${err}`) })
+        await Skill.find({ userId: req.params.userId }).lean().sort({ skillLevel: -1 })
+        .then((data) => { res.send(data) })
+        .catch((err) => { res.send(`err: ${err}`) })
     })
     router.delete('/skills', async (req, res, next) => {
         await Skill.findByIdAndDelete(req.body.skillId)
