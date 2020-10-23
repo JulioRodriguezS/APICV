@@ -240,7 +240,7 @@ module.exports = async (app, server) => {
     //social networks
     router.get('/social-network/:userId', async (req, res, next) => {
         const userId = req.params.userId
-        await SocialNetwork.findOne({ userId }).lean()
+        await SocialNetwork.find({ userId }).lean()
             .then((data) => {
                 res.send(data)
             })
