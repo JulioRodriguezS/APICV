@@ -257,6 +257,15 @@ module.exports = async (app, server) => {
     })
 
     //social networks
+    router.get('/social-network/:userId', async (req, res, next) => {
+        await SocialNetwork.findById({ userId: req.params.userId }).lean()
+            .then((data) => {
+                res.send(data)
+            })
+            .catch((err) => {
+                res.send(`err: ${err}`)
+            })
+    })
     router.post('/social-network/add', async (req, res, next) => {
         const objReq = { userId, networkName, networkLink } = req.body
         const newSN = new SocialNetwork(objReq)
