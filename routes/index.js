@@ -6,32 +6,13 @@ module.exports = async (app, server) => {
     const router = server.Router()
 
     //get user information
-    router.get('/user', async (req, res, next) => {
-        const { userId } = req.params.body 
+    router.get('/user/:userId', async (req, res, next) => {
+        const userId = req.params.userId
         await User.findById(userId)
-        .then((data)=>{res.send(data)})
-        .catch((err) => { res.send(`err: ${err}`) })
-        //deprecaited because not sense to use the password for some that has to be public
-        // const objReqBody = { email, password } = req.body
-        // await User.findOne({ email: email })
-        //     .then(async (data) => {
-        //         const findUser = new User(data)
-        //         await findUser.matchPassword(password)
-        //             .then((data) => {
-        //                 if (data) {
-        //                     res.send(findUser)
-        //                 } else {
-        //                     res.send(`err: the password doesn't match`)
-        //                 }
-        //             })
-        //             .catch((err) => {
-        //                 res.send(`err: ${err}`)
-        //             })
-
-        //     })
-        //     .catch((err) => { res.send(`err: ${err}`) })
+            .then((data) => { res.send(data) })
+            .catch((err) => { res.send(`err: ${err}`) })
     })
-    router.put('/user/edit', async (req, res, next) => {        
+    router.put('/user/edit', async (req, res, next) => {
         const { userId, name, lastName, phoneNumb, country, city, cp, address, actualPassword, newPassword } = req.body
         await User.findById(userId)
             .then(async (data) => {
@@ -39,7 +20,7 @@ module.exports = async (app, server) => {
                 await findUser.matchPassword(actualPassword)
                     .then(async (data) => {
                         if (data) {
-                            const newUser = {name, lastName, phone, country, city, cp, address, password} = {name, lastName, phoneNumb, country, city, cp, address, newPassword}
+                            const newUser = { name, lastName, phone, country, city, cp, address, password } = { name, lastName, phoneNumb, country, city, cp, address, newPassword }
                             await User.findByIdAndUpdate(userId, newUser)
                                 .then((data) => { res.send(data) })
                                 .catch((err) => { res.send(`err: ${err}`) })
@@ -164,8 +145,8 @@ module.exports = async (app, server) => {
     })
     router.get('/skills/:userId', async (req, res, next) => {
         await Skill.find({ userId: req.params.userId }).lean().sort({ skillLevel: -1 })
-        .then((data) => { res.send(data) })
-        .catch((err) => { res.send(`err: ${err}`) })
+            .then((data) => { res.send(data) })
+            .catch((err) => { res.send(`err: ${err}`) })
     })
     router.delete('/skills', async (req, res, next) => {
         await Skill.findByIdAndDelete(req.body.skillId)
@@ -197,7 +178,7 @@ module.exports = async (app, server) => {
     })
     router.put('/degrees/edit/:degreeId', async (req, res, next) => {
         const { degreeId, institutionName, carreerDescription, carrerTitle, gotCertified, institute, initialDate, finalDate } = req.body
-        await Degree.findByIdAndUpdate(degreeId, {institutionName, carreerDescription, carrerTitle, gotCertified, institute, initialDate, finalDate })
+        await Degree.findByIdAndUpdate(degreeId, { institutionName, carreerDescription, carrerTitle, gotCertified, institute, initialDate, finalDate })
             .then((data) => { res.send(data) })
             .catch((err) => { res.send(`err: ${err}`) })
     })
@@ -227,7 +208,7 @@ module.exports = async (app, server) => {
     })
     router.put('/hobbies/edit', async (req, res, next) => {
         const { hobbieId, title, descripticon, icon, setView } = req.body
-        await Hobbie.findByIdAndUpdate(hobbieId, {title, descripticon, icon, setView})
+        await Hobbie.findByIdAndUpdate(hobbieId, { title, descripticon, icon, setView })
             .then((data) => { res.send(data) })
             .catch((err) => { res.send(`err: ${err}`) })
     })
@@ -258,7 +239,8 @@ module.exports = async (app, server) => {
 
     //social networks
     router.get('/social-network/:userId', async (req, res, next) => {
-        await SocialNetwork.findById({ userId: req.params.userId }).lean()
+        const userId = req.params.userId
+        await SocialNetwork.findOne({ userId }).lean()
             .then((data) => {
                 res.send(data)
             })
@@ -280,9 +262,10 @@ module.exports = async (app, server) => {
     })
 
     //courses
-    router.get('/courses/:userId', async (req, res, next) => {
-        await Course.findById({ userId: req.params.userId }).lean()
+    router.get('/courses/:userId', async (req, res, next) => {         
+        await Course.find({userId:req.params.userId}).lean()
             .then((data) => {
+                console.log(data)
                 res.send(data)
             })
             .catch((err) => {
@@ -309,7 +292,8 @@ module.exports = async (app, server) => {
 
     //workExperience
     router.get('/work-experience/:userId', async (req, res, next) => {
-        await WorkExpertise.findById({ userId: req.params.userId }).lean()
+        const userId = req.params.userId
+        await WorkExpertise.find({userId}).sort({finalDate:-1}).lean()
             .then((data) => {
                 res.send(data)
             })
