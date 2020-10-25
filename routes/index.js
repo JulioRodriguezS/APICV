@@ -158,7 +158,7 @@ module.exports = async (app, server) => {
     router.get('/degrees/:userId', async (req, res, next) => {
         const searchUser = await User.findById(req.params.userId)
         if (searchUser) {
-            await Degree.findOne({ userId: searchUser._id })
+            await Degree.find({ userId: searchUser._id })
                 .then((data) => {
                     res.send(data)
                 })
@@ -265,7 +265,6 @@ module.exports = async (app, server) => {
     router.get('/courses/:userId', async (req, res, next) => {         
         await Course.find({userId:req.params.userId}).lean()
             .then((data) => {
-                console.log(data)
                 res.send(data)
             })
             .catch((err) => {
