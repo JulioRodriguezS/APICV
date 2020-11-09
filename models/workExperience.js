@@ -25,6 +25,12 @@ const workExperienceSchema = new mongoose.Schema({
     finalDate : {
         type: Date
     },
+    tools:{
+        type: String
+    },
+    technologies:{
+        type: String
+    },
     savedDate: {
         type: Date,
         default: Date.now
