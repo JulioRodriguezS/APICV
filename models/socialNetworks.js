@@ -12,6 +12,9 @@ const socialNetworksSchema = mongoose.Schema({
     networkLink: {
         type: String
     },
+    icon: {
+        type: String
+    },
     savedDate: {
         type: Date,
         default: Date.now
