@@ -1,5 +1,5 @@
 require('../dbcnn')
-const { User, Skill, SkillLevel, Degree, Hobbie, SocialNetwork, Goal, Course, WorkExpertise } = require('../models')
+const { User, Skill, SkillLevel, Degree, Hobbie, SocialNetwork, Goal, Course, WorkExpertise, Kpis } = require('../models')
 
 
 module.exports = async (app, server) => {
@@ -89,7 +89,7 @@ module.exports = async (app, server) => {
                 const newSkillLevel = new SkillLevel(skill)
                 await newSkillLevel.save()
                     .then((data) => { res.send('ok') })
-                    .catch((err) => { console.log(`err: ${err}`) })
+                    .catch((err) => { cres.send(`err: ${err}`) })
             } else {
                 res.send(`the skill level: ${title} is already defined`)
             }
@@ -319,6 +319,54 @@ module.exports = async (app, server) => {
             .catch((err) => { res.send(`err: ${err}`) })
     })
 
+    //kpis
+    router.get('/kpis/all', async (req, res, next) => {         
+        await Kpis.find({}).lean()
+            .then((data) => {
+                res.send(data)
+            })
+            .catch((err) => {
+                res.send(`err: ${err}`)
+            })
+    })
+    router.get('/kpis/visitors/:userId', async (req, res, next) => {         
+        await Kpis.find({userId:req.params.userId}).lean()
+            .then((data) => {
+                res.send(data)
+            })
+            .catch((err) => {
+                res.send(`err: ${err}`)
+            })
+    })
+    router.get('/kpis/visitsNumber/:userId', async (req, res, next) => {         
+        await Kpis.find({userId:req.params.userId}).lean()
+            .then((data) => {
+                res.send({'visits':data.length})
+            })
+            .catch((err) => {
+                res.send({'err': err})
+            })
+    })
+    router.post('/kpis/add', async (req, res, next) => {
+        const newKpi = new Kpis(req.body)
+        const resp = []
+        await Kpis.findOne({ip:req.body.ip,userId:req.body.userId})
+            .then(async (data) => {
+                if(!data){
+                    await newKpi.save()
+                    .then((data) => { resp.push({ "successfully saved": data }) })
+                    .catch((err) => { resp.push({ "err when saving data": err }) })
+                }  
+                else{
+                    resp.push({ "err": "the data was already saved" })
+                } 
+            })
+            .catch((err) => {
+                resp.push({'err': err})
+            })
+        
+        res.send(resp)
+    })
 
     const isValid = (word, type) => {
         let res = false
