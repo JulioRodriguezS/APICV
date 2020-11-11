@@ -348,6 +348,7 @@ module.exports = async (app, server) => {
             })
     })
     router.post('/kpis/add', async (req, res, next) => {
+        
         const newKpi = new Kpis(req.body)
         const resp = []
         await Kpis.findOne({ip:req.body.ip,userId:req.body.userId})
