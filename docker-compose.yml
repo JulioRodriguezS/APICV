@@ -6,4 +6,3 @@ services:
         restart: always
         build: .
         environment:
-            - DB_CONNECTION=mongodb+srv://Yullz:FertspaE2718281@cluster0.zeoop.mongodb.net/apiCv?retryWrites=true&w=majority
